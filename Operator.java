@@ -6,6 +6,8 @@ public class Operator extends Thread {
     }
 
     public void run() {
-        System.out.println("Operate Operate Op Op Operate");
+        while(elevator.cart != null) { // While elevator is empty
+
+        }
     }
 }

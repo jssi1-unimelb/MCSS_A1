@@ -1,16 +1,27 @@
 public class Elevator extends Station {
 
-    private Cart cart;
+    protected Cart cart;
+    private boolean atTop; // Assume elevator starts at the top
 
     public Elevator() {
         super(0); // Elevator has a station id 0
+        this.atTop = true;
     }
 
-    public void arrive(Cart cart) {
+    public synchronized void move() {
+        try {
+            wait(Params.operatorPause());
+        } catch (InterruptedException e) {
+            // Error Handling Code
+        }
+        this.atTop = !this.atTop;
+    }
+
+    public synchronized void arrive(Cart cart) {
         this.cart = cart;
     }
 
-    public Cart depart() {
+    public synchronized Cart depart() {
         Cart temp = this.cart;
         this.cart = null; // Remove cart from elevator
         return temp;

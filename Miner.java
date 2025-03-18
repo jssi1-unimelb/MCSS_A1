@@ -5,10 +5,6 @@ public class Miner extends Thread {
         this.station = station;
     }
 
-    public void start() {
-
-    }
-
     public void run() {
         System.out.println("A Minerrrrrr");
     }

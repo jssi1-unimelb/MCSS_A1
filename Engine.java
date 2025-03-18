@@ -9,15 +9,21 @@ public class Engine extends Thread {
     }
 
     // Move engine to other station
-    public void depart() {
-        if(this.currentStation.id == this.station1.id) {
-            this.currentStation = this.station2;
-        } else if(this.currentStation.id == this.station2.id) {
-            this.currentStation = this.station1;
+    public void travel() {
+        try {
+            sleep(Params.ENGINE_TIME); // Engine travels to next station
+            if(this.currentStation.id == this.station1.id) {
+                this.currentStation = this.station2;
+            } else if(this.currentStation.id == this.station2.id) {
+                this.currentStation = this.station1;
+            }
+        } catch (InterruptedException e) {
+            // Handle Error Code
         }
     }
 
     public void run() {
+        try
         System.out.println("Engine go NYOOOOOOOOOOOOOOOM SKRRT SKRRT SKRRT!!!");
     }
 }

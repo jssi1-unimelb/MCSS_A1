@@ -8,15 +8,23 @@ public class Station {
         this.hasGem = false;
     }
 
-    public void cartArrive(Cart c) {
+    public synchronized void cartArrive(Cart c) {
+        while(cart != null) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                // Do some error handling
+            }
+        }
         this.cart = c;
     }
 
-    public void cartDepart() {
+    public synchronized void cartDepart() {
         this.cart = null;
+        notifyAll();
     }
 
-    public void loadCart(Cart c) {
+    public synchronized void loadCart(Cart c) {
         if(hasGem) {
             c.gems++;
             this.hasGem = false;
