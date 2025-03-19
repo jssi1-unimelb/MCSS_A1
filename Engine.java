@@ -13,10 +13,15 @@ public class Engine extends Thread {
     public void operate() {
         if(this.currentStation.id == this.station1.id) { // At station 1
             if(this.cart == null) { // Engine does not have cart
-                this.cart = this.currentStation.unloadCart(); // Pick up cart from station
+                this.cart = this.currentStation.depart(); // Pick up cart from station
+
+                if(this.currentStation.id != -1) {
+                    System.out.println(cart + " collected from station " + this.currentStation.id);
+                } else {
+                    System.out.println(cart + " collected from elevator");
+                }
             }
         }
-
         // Engine travels to other station
         try {
             sleep(Params.ENGINE_TIME); // Travel time
@@ -29,9 +34,18 @@ public class Engine extends Thread {
             throw new RuntimeException(e);
         }
 
-        // Offload cart to the station
-        this.currentStation.loadCart(cart);
-        this.cart = null;
+
+        if(this.cart != null) { // Engine has no cart
+            if(this.currentStation.id != -1) {
+                System.out.println(cart.toString() + " delivered to station " + this.currentStation.id);
+            } else {
+                System.out.println(cart.toString() + " delivered to elevator");
+            }
+
+            // Offload cart to the station
+            this.currentStation.arrive(cart);
+            this.cart = null;
+        }
     }
 
     public void run() {

@@ -6,8 +6,8 @@ public class Operator extends Thread {
     }
 
     public void run() {
-        while(elevator.cart != null) { // While elevator is empty
-
+        while(true) {
+            elevator.move();
         }
     }
 }

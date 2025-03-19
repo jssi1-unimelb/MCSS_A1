@@ -1,7 +1,6 @@
 public class Miner extends Thread {
     public Station station;
 
-
     public Miner(Station station) {
         this.station = station;
     }
