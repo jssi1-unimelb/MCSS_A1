@@ -13,7 +13,7 @@ public class Engine extends Thread {
     public void operate() {
         if(this.currentStation.id == this.station1.id) { // At station 1
             if(this.cart == null) { // Engine does not have cart
-                this.cart = this.currentStation.depart(); // Pick up cart from station
+                this.cart = this.currentStation.engineDepart(); // Pick up cart from station
 
                 if(this.currentStation.id != -1) {
                     System.out.println(cart + " collected from station " + this.currentStation.id);
@@ -43,14 +43,14 @@ public class Engine extends Thread {
             }
 
             // Offload cart to the station
-            this.currentStation.arrive(cart);
+            this.currentStation.engineArrive(cart);
             this.cart = null;
         }
     }
 
     public void run() {
         while(true) {
-            operate();
+//            operate();
         }
     }
 }

@@ -43,7 +43,7 @@ public class Station {
     }
 
     // Cart arrives at station
-    public synchronized void arrive(Cart c) {
+    public synchronized void engineArrive(Cart c) {
         while(cart != null) { // Station is occupied
             try {
                 wait();
@@ -55,16 +55,9 @@ public class Station {
     }
 
     // Transfers cart departs the station
-    public synchronized Cart depart() {
-        while(this.cart == null) { // Station must have a cart to depart
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        while(this.cart.gems != id + 1) { // Cart doesn't leave until it receives a gem
+    public synchronized Cart engineDepart() {
+        // station must have a cart and cart must get a gem from the station
+        while(this.cart == null || this.cart.gems != id + 1) {
             try {
                 wait();
             } catch (InterruptedException e) {
