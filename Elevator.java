@@ -10,30 +10,21 @@ public class Elevator extends Station {
     }
 
     public synchronized void move() {
-        // Empty Lift - Lift operator will move lift at random intervals
-        while(cart == null) {
-            try {
-                wait(Params.operatorPause());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        if(cart == null) { // Empty Lift
+            while(cart == null) {
+                try {
+                    wait(Params.operatorPause());
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        }
-
-        // Lift not empty, but new cart is waiting for engine
-        while(!atTop && cart.gems == 0) {
-            try {
-                wait(Params.operatorPause());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // Lift not empty, full cart is waiting for consumer
-        while(atTop && cart.gems == Params.STATIONS) {
-            try {
-                wait(Params.operatorPause());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+        } else { // Not empty lift
+            while(cart != null && ((!atTop && cart.gems == 0) || (atTop && cart.gems == Params.STATIONS))) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -46,8 +37,9 @@ public class Elevator extends Station {
 
             if(this.cart == null) {
                 System.out.println("elevator " + movement + " (empty)");
+            } else {
+                System.out.println("elevator " + movement + " with " + cart);
             }
-            System.out.println("elevator " + movement + " with " + cart);
             wait(Params.ELEVATOR_TIME);
             this.atTop = !atTop;
             notifyAll(); // wake up engine waiting to deliver cart
@@ -69,7 +61,7 @@ public class Elevator extends Station {
             }
         }
 
-        System.out.println("depart() called");
+//        System.out.println("depart() called");
 
 
         Cart tmp = this.cart;
@@ -91,7 +83,7 @@ public class Elevator extends Station {
             }
         }
 
-        System.out.println("engineDepart() called");
+        // System.out.println("engineDepart() called");
 
         Cart tmp = this.cart;
         this.cart = null;
@@ -108,7 +100,7 @@ public class Elevator extends Station {
            }
         }
 
-        System.out.println("arrive() called");
+//        System.out.println("arrive() called");
 
         super.engineArrive(c);
         notifyAll();
@@ -123,7 +115,7 @@ public class Elevator extends Station {
             }
         }
 
-        System.out.println("engineArrive() called");
+//        System.out.println("engineArrive() called");
 
 
         super.engineArrive(c);

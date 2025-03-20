@@ -28,8 +28,12 @@ public class Station {
 
     // Unloads the station gem onto the cart
     public synchronized void unloadGem() {
-        while(cart == null) { // Station has no cart
+        // Pause thread if:
+        //      1. Station has no cart
+        //      2. The cart has already collected a gem
+        while(cart == null || cart.gems != this.id) {
             try {
+//                System.out.println("Station " + id + " waiting for a cart to load gem, miner put to sleep");
                 wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -52,6 +56,7 @@ public class Station {
             }
         }
         this.cart = c;
+        notifyAll();
     }
 
     // Transfers cart departs the station
@@ -65,7 +70,6 @@ public class Station {
             }
         }
 
-        System.out.println("Station " + id + " lets go of a cart");
         Cart tmp = this.cart;
         this.cart = null;
         notifyAll();
