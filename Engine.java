@@ -37,9 +37,9 @@ public class Engine extends Thread {
 
         if(this.cart != null) { // Engine has no cart
             if(this.currentStation.id != -1) {
-                System.out.println(cart.toString() + " delivered to station " + this.currentStation.id);
+                System.out.println(cart + " delivered to station " + this.currentStation.id);
             } else {
-                System.out.println(cart.toString() + " delivered to elevator");
+                System.out.println(cart + " delivered to elevator");
             }
 
             // Offload cart to the station
@@ -50,7 +50,7 @@ public class Engine extends Thread {
 
     public void run() {
         while(true) {
-//            operate();
+            operate();
         }
     }
 }

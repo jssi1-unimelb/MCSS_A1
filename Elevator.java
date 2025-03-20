@@ -69,6 +69,9 @@ public class Elevator extends Station {
             }
         }
 
+        System.out.println("depart() called");
+
+
         Cart tmp = this.cart;
         this.cart = null;
         notifyAll();
@@ -88,6 +91,8 @@ public class Elevator extends Station {
             }
         }
 
+        System.out.println("engineDepart() called");
+
         Cart tmp = this.cart;
         this.cart = null;
         notifyAll();
@@ -95,23 +100,33 @@ public class Elevator extends Station {
     }
 
     public synchronized void arrive(Cart c) {
-//        while(c.gems == 0 && !atTop) { // At bottom and new cart, don't go up
-//            try {
-//                wait();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
-//
-//        while(c.gems == Params.STATIONS && atTop) { // At top and cart got gems, don't go down
-//            try {
-//                wait();
-//            } catch (InterruptedException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
+        while(!atTop) {
+           try {
+               wait();
+           } catch (InterruptedException e) {
+               throw new RuntimeException(e);
+           }
+        }
 
-        super.arrive(c);
+        System.out.println("arrive() called");
+
+        super.engineArrive(c);
+        notifyAll();
+    }
+
+    public @Override synchronized void engineArrive(Cart c) {
+        while(atTop) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        System.out.println("engineArrive() called");
+
+
+        super.engineArrive(c);
         notifyAll();
     }
 }

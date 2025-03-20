@@ -65,6 +65,7 @@ public class Station {
             }
         }
 
+        System.out.println("Station " + id + " lets go of a cart");
         Cart tmp = this.cart;
         this.cart = null;
         notifyAll();
