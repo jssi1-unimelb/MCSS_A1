@@ -1,39 +1,33 @@
-import static java.lang.Thread.currentThread;
-
-public class Elevator extends Station {
+public class Elevator extends StationTemplate {
 
     private boolean atTop; // Assume elevator starts at the top
 
     public Elevator() {
         super(-1); // Elevator has a station id 0
-        this.atTop = true;
+        atTop = true;
     }
 
     public synchronized void move() {
-        // Empty Lift - Lift operator will move lift at random intervals
-        while(cart == null) {
+        if(cart == null) { // Elevator empty
             try {
-                wait(Params.operatorPause());
+                wait(Params.operatorPause()); // Move at random interval
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }
+        } else { // Elevator not empty
+            while(cart != null && ((atTop && cart.gems == Params.STATIONS) || (!atTop && cart.gems == 0))) {
+                try {
+                    wait();
 
-        // Lift not empty, but new cart is waiting for engine
-        while(!atTop && cart.gems == 0) {
-            try {
-                wait(Params.operatorPause());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // Lift not empty, full cart is waiting for consumer
-        while(atTop && cart.gems == Params.STATIONS) {
-            try {
-                wait(Params.operatorPause());
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                    // When woken up, the elevator will be empty
+                    try {
+                        wait(Params.operatorPause()); // Move at random interval
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -44,89 +38,79 @@ public class Elevator extends Station {
                 movement = "descends";
             }
 
-            if(this.cart == null) {
+            if(cart == null) {
                 System.out.println("elevator " + movement + " (empty)");
+            } else {
+                System.out.println("elevator " + movement + " with " + cart);
             }
-            System.out.println("elevator " + movement + " with " + cart);
-            wait(Params.ELEVATOR_TIME);
-            this.atTop = !atTop;
+
+
+            wait(Params.ELEVATOR_TIME); // Elevator takes time to move
+            atTop = !atTop; // Change location
             notifyAll(); // wake up engine waiting to deliver cart
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // Used by the "consumer" class to take the full cart from the lift
+    public synchronized Cart cartDepart() {
+        Cart tmp = cart;
+        cart = null;
+        notifyAll();
+        return tmp;
+    }
+
+    // Called by Consumer and Producer
     public synchronized Cart depart() {
-        // Elevator must have a cart
-        // Elevator must be on top
-        // Cart must be full
-        while(this.cart == null || !atTop || this.cart.gems == 0) {
+        // Elevator is empty or at the bottom or cart is empty
+        while(cart == null || !atTop || cart.gems == 0){
             try {
                 wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
-
-        System.out.println("depart() called");
-
-
-        Cart tmp = this.cart;
-        this.cart = null;
-        notifyAll();
-        return tmp;
+        return cartDepart();
     }
 
-    // Used by the "engine" class to take the empty cart from the lift
-    public synchronized Cart engineDepart() {
-        // Elevator must have a cart
-        // Elevator must be on bottom
-        // Cart must be empty
-        while(this.cart == null || atTop || this.cart.gems == Params.STATIONS) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        System.out.println("engineDepart() called");
-
-        Cart tmp = this.cart;
-        this.cart = null;
-        notifyAll();
-        return tmp;
-    }
-
+    // Called by Consumer and Producer
     public synchronized void arrive(Cart c) {
-        while(!atTop) {
-           try {
-               wait();
-           } catch (InterruptedException e) {
-               throw new RuntimeException(e);
-           }
-        }
-
-        System.out.println("arrive() called");
-
-        super.engineArrive(c);
-        notifyAll();
-    }
-
-    public @Override synchronized void engineArrive(Cart c) {
-        while(atTop) {
+        // Elevator is not empty or at the bottom
+        while(cart != null || !atTop) {
             try {
                 wait();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         }
+        cart = c;
+        notifyAll();
+    }
 
-        System.out.println("engineArrive() called");
+    // Used by the "engine" class
+    public synchronized Cart stationDepart() {
+        // Elevator is empty or at the top or cart is full
+        while(cart == null || atTop || cart.gems == Params.STATIONS) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return cartDepart();
+    }
 
-
-        super.engineArrive(c);
+    // Used by the "engine" class
+    public synchronized void stationArrive(Cart c) {
+        // Elevator is not empty or at the top
+        while(cart != null || atTop) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        cart = c;
         notifyAll();
     }
 }

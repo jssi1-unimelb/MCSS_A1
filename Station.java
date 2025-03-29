@@ -1,34 +1,26 @@
-public class Station {
+public class Station extends StationTemplate {
     protected int id;
-    private boolean hasGem;
+    private boolean cartHasBeenLoaded;
     protected Cart cart;
 
     public Station(int id) {
-        this.id = id;
-        this.hasGem = false;
-        this.cart = null;
+        super(id);
+        this.cartHasBeenLoaded = false;
     }
 
     public synchronized void mine() {
-        while(hasGem) { // Miner thread only runs when there is no gem in station
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
+        // Station has no gem
         try {
             wait(Params.MINING_TIME); // Miner take time to mine
-            this.hasGem = true;
+
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     // Unloads the station gem onto the cart
-    public synchronized void unloadGem() {
-        while(cart == null) { // Station has no cart
+    public synchronized void loadCart() {
+        while(cart == null || cartHasBeenLoaded) { // Station has no cart or cart is already loaded
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -36,14 +28,15 @@ public class Station {
             }
         }
 
+        // Load cart
         cart.gems++;
-        this.hasGem = false;
+        cartHasBeenLoaded = true;
         System.out.println(cart + " loaded with a gem");
         notifyAll(); // wakes up engine
     }
 
     // Cart arrives at station
-    public synchronized void engineArrive(Cart c) {
+    public @Override synchronized void stationArrive(Cart c) {
         while(cart != null) { // Station is occupied
             try {
                 wait();
@@ -51,13 +44,16 @@ public class Station {
                 throw new RuntimeException(e);
             }
         }
-        this.cart = c;
+
+        // Cart arrives at station
+        cart = c;
+        cartHasBeenLoaded = false; // Cart needs to be loaded
+        notifyAll();
     }
 
-    // Transfers cart departs the station
-    public synchronized Cart engineDepart() {
-        // station must have a cart and cart must get a gem from the station
-        while(this.cart == null || this.cart.gems != id + 1) {
+    // Cart departs the station
+    public @Override synchronized Cart stationDepart() {
+        while(cart == null || !cartHasBeenLoaded) { // Station isn't occupied or cart hasn't been loaded
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -66,8 +62,8 @@ public class Station {
         }
 
         System.out.println("Station " + id + " lets go of a cart");
-        Cart tmp = this.cart;
-        this.cart = null;
+        Cart tmp = cart;
+        cart = null;
         notifyAll();
         return tmp;
     }

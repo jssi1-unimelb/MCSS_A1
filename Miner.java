@@ -8,7 +8,7 @@ public class Miner extends Thread {
     public void run() {
         while(true) {
             station.mine();
-            station.unloadGem();
+            station.loadCart(); // Miner will not continue until it has loaded the gem into the cart
         }
     }
 }
