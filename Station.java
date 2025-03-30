@@ -60,8 +60,6 @@ public class Station extends StationTemplate {
                 throw new RuntimeException(e);
             }
         }
-
-        System.out.println("Station " + id + " lets go of a cart");
         Cart tmp = cart;
         cart = null;
         notifyAll();
